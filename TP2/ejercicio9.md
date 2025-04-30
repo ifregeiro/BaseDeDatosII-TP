@@ -16,6 +16,6 @@ El Replica Set te asegura que no perdés datos si algo falla y que tu sistema si
 
 ### Sharding Beneficios
 
-El Sharding te da una forma de manejar bases de datos muy grandes y pesadas sin que se te cuelgue todo.
+El Sharding te da una forma de manejar bases de datos muy grandes y pesadas, lo que ayuda a que no se sobrecargue todo el sistema.
 
 
