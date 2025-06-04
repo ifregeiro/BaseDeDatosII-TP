@@ -40,7 +40,3 @@ db.ventas.aggregate([
 📌 **Explicación**: Se filtran las ventas realizadas a clientes cuyo país es "España" y el estado de la venta es "Entregado".
 
 ![screen2](img/ej1_captura2.png)
-
----
-
-✅ Ambas consultas se pueden ejecutar en MongoDB Compass o desde el panel de MongoDB en Visual Studio Code.
