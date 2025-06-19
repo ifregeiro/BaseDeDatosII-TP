@@ -1,0 +1,47 @@
+use('empresa');
+
+// Lucia Pérez
+db.empleados.updateOne(
+  { nombre: "Lucia Pérez" },
+  {
+    $set: {
+      direccion: {
+        calle: "Av. Belgrano 123",
+        ciudad: "Buenos Aires",
+        codigo_postal: "1406"
+      }
+    }
+  }
+);
+
+// Tomás Tevez
+db.empleados.updateOne(
+  { nombre: "Tomás Tevez" },
+  {
+    $set: {
+      direccion: {
+        calle: "Calle Mitre 456",
+        ciudad: "Rosario",
+        codigo_postal: "2000"
+      }
+    }
+  }
+);
+
+// Ignacio Coppo
+db.empleados.updateOne(
+  { nombre: "Ignacio Coppo" },
+  {
+    $set: {
+      direccion: {
+        calle: "San Martín 789",
+        ciudad: "Córdoba",
+        codigo_postal: "5000"
+      }
+    }
+  }
+);
+
+
+db.empleados.find({}, { _id: 0, nombre: 1, direccion: 1 });
+

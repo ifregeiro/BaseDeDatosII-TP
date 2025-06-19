@@ -1,0 +1,24 @@
+// Ejercicio 1: CRUD básico
+// - Crea una base de datos llamada empresa.
+// - Agrega una colección empleados con 3 documentos que incluyan nombre, edad y puesto.
+// - Actualiza la edad de uno de los empleados.
+// - Elimina al empleado que tenga el puesto de "pasante".
+
+use('empresa');
+
+db.createCollection("empleados");
+
+db.empleados.insertMany([
+  { nombre: "Lucia Pérez", edad: 30, puesto: "Desarrolladora" },
+  { nombre: "Tomás Tevez", edad: 22, puesto: "Pasante" },
+  { nombre: "Ignacio Coppo", edad: 35, puesto: "Gerente de Proyecto" }
+])
+
+db.empleados.updateOne(
+  { nombre: "Lucia Pérez" },
+  { $set: { edad: 31 } }
+)
+
+db.empleados.deleteOne(
+  { puesto: "Pasante" }
+)

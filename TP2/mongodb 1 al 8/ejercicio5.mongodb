@@ -1,0 +1,20 @@
+use('productos');
+
+db.createCollection("ventas");
+
+db.ventas.insertMany([
+  { producto: "Laptop", cantidad: 2, precio_unitario: 1500 },
+  { producto: "Mouse", cantidad: 5, precio_unitario: 20 },
+  { producto: "Celular", cantidad: 3, precio_unitario: 1300 },
+  { producto: "Teclado", cantidad: 3, precio_unitario: 50 },
+  { producto: "Funda Celular", cantidad: 2, precio_unitario: 20 }
+]);
+
+db.ventas.aggregate([
+  {
+    $group: {
+      _id: "$producto",
+      total_ventas: { $sum: { $multiply: ["$cantidad", "$precio_unitario"] } }
+    }
+  }
+]);

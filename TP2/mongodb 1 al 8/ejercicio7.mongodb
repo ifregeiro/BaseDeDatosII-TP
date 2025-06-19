@@ -1,0 +1,27 @@
+//Referencias Crea una colección cursos y una colección alumnos. 
+// Luego inserta documentos donde los alumnos tengan una lista de id_curso referenciando a los cursos.
+
+use('universidad'); 
+
+// Crea una colección cursos y una colección alumnos. Luego inserta documentos donde 
+// los alumnos tengan una lista de id_curso referenciando a los cursos.
+
+db.createCollection("alumnos");
+db.createCollection("cursos");
+
+const cursoMatematicaId = ObjectId();
+const cursoLenguaId = ObjectId();
+const cursoInglesId = ObjectId();
+
+db.cursos.insertMany([
+    { _id: cursoMatematicaId, nombre: "Matemática", duracion: "3 meses"},
+    { _id: cursoLenguaId, nombre: "Lengua", duracion: "6 meses"},
+    { _id: cursoInglesId, nombre: "Ingles", duracion: "12 meses"}
+]);
+
+db.alumnos.insertMany([
+    { nombre: "Facundo", edad: 20, cursos: [cursoMatematicaId, cursoLenguaId] },
+    { nombre: "Pablo", edad: 24, cursos: [cursoMatematicaId, cursoLenguaId, cursoInglesId] },
+    { nombre: "Ignacio", edad: 22, cursos: [cursoInglesId, cursoLenguaId] },
+    { nombre: "Lucia", edad: 20, cursos: [cursoInglesId] }
+]);
