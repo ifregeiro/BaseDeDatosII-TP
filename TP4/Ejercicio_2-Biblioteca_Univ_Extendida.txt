@@ -1,0 +1,103 @@
+//Ejercicio 2 - Creación modelado------------------------------------------------------
+// Crear carreras
+CREATE 
+  (sistemas:Carrera {nombre: "Ingeniería en Sistemas"}),
+  (medicina:Carrera {nombre: "Medicina"}),
+  (derecho:Carrera {nombre: "Derecho"});
+
+// Crear estudiantes
+CREATE 
+  (javier:Estudiante {nombre: "Javier", apellido: "Cervi"}),
+  (jorge:Estudiante {nombre: "Jorge", apellido: "Rial"}),
+  (ignacio:Estudiante {nombre: "Ignacio", apellido: "Federer"}),
+  (sofia:Estudiante {nombre: "Sofia", apellido: "Rodrigo"});
+
+// Relación entre Estudiantes y Carreras
+MATCH 
+  (javier:Estudiante {nombre: "Javier"}), 
+  (jorge:Estudiante {nombre: "Jorge"}), 
+  (ignacio:Estudiante {nombre: "Ignacio"}), 
+  (sofia:Estudiante {nombre: "Sofía"}), 
+  (sistemas:Carrera {nombre: "Ingeniería en Sistemas"}), 
+  (medicina:Carrera {nombre: "Medicina"}), 
+  (derecho:Carrera {nombre: "Derecho"})
+CREATE 
+  (javier)-[:ESTUDIA]->(sistemas),
+  (jorge)-[:ESTUDIA]->(medicina),
+  (ignacio)-[:ESTUDIA]->(derecho),
+  (sofia)-[:ESTUDIA]->(sistemas);
+
+
+//Creacion Categorias
+CREATE 
+  (:Categoria {nombre: "Programación"}),
+  (:Categoria {nombre: "Medicina"}),
+  (:Categoria {nombre: "Historia"}),
+  (:Categoria {nombre: "Matemáticas"});
+
+//Crear Libros
+CREATE 
+  (java:Libro {titulo: "Java Básico"}),
+  (anatomia:Libro {titulo: "Anatomía Humana"}),
+  (historia:Libro {titulo: "Historia Argentina"}),
+  (calculo:Libro {titulo: "Cálculo I"});
+
+
+
+//Relacionar Libros a Categorias
+MATCH 
+  (java:Libro {titulo: "Java Básico"}), 
+  (anatomia:Libro {titulo: "Anatomía Humana"}), 
+  (historia:Libro {titulo: "Historia Argentina"}), 
+  (calculo:Libro {titulo: "Cálculo I"}), 
+  (prog:Categoria {nombre: "Programación"}), 
+  (med:Categoria {nombre: "Medicina"}), 
+  (hist:Categoria {nombre: "Historia"}), 
+  (mat:Categoria {nombre: "Matemáticas"})
+CREATE 
+  (java)-[:PERTENECE_A]->(prog),
+  (anatomia)-[:PERTENECE_A]->(med),
+  (historia)-[:PERTENECE_A]->(hist),
+  (calculo)-[:PERTENECE_A]->(mat);
+
+
+//Creación de Relaciones de Préstamos c/fecha y estado
+MATCH 
+  (javier:Estudiante {nombre: "Javier"}), 
+  (jorge:Estudiante {nombre: "Jorge"}), 
+  (ignacio:Estudiante {nombre: "Ignacio"}), 
+  (java:Libro {titulo: "Java Básico"}), 
+  (calculo:Libro {titulo: "Cálculo I"}), 
+  (anatomia:Libro {titulo: "Anatomía Humana"}), 
+  (historia:Libro {titulo: "Historia Argentina"})
+CREATE 
+  (javier)-[:PRESTAMO {fecha: "2024-01-10", estado: "Activo"}]->(java),
+  (javier)-[:PRESTAMO {fecha: "2024-01-05", estado: "Devuelto"}]->(calculo),
+  (jorge)-[:PRESTAMO {fecha: "2024-01-15", estado: "Activo"}]->(anatomia),
+  (ignacio)-[:PRESTAMO {fecha: "2024-01-12", estado: "Activo"}]->(historia),
+  (ignacio)-[:PRESTAMO {fecha: "2024-01-08", estado: "Devuelto"}]->(java);
+
+
+//Consultas
+//Inciso 1 - Obtener todos los libros actualmente prestados (estado "Activo")
+MATCH (e:Estudiante)-[p:PRESTAMO {estado: "Activo"}]->(l:Libro)
+RETURN l.titulo AS Libro, e.nombre + " " + e.apellido AS Estudiante;
+
+
+//Inciso 2 - Listar cuántos libros ha pedido prestado cada estudiante
+MATCH (e:Estudiante)-[:PRESTAMO]->(l:Libro)
+RETURN e.nombre + " " + e.apellido AS Estudiante, COUNT(l) AS Total_Prestamos;
+
+
+//Inciso 3 - Mostrar las categorías con más préstamos activos
+MATCH (e:Estudiante)-[p:PRESTAMO {estado: "Activo"}]->(l:Libro)-[:PERTENECE_A]->(c:Categoria)
+RETURN c.nombre AS Categoria, COUNT(p) AS Prestamos_Activos
+ORDER BY Prestamos_Activos DESC;
+
+
+// Inciso 4 - Encontrar los estudiantes que no tienen préstamos activos
+MATCH (e:Estudiante)
+WHERE NOT (e)-[:PRESTAMO {estado: "Activo"}]->()
+RETURN e.nombre + " " + e.apellido AS Estudiante;
+
+

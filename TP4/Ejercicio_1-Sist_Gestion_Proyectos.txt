@@ -1,0 +1,70 @@
+// Creación de Departamentos
+CREATE (rh:Departamento {nombre: "Recursos Humanos"}),
+       (ingenieria:Departamento {nombre: "Ingeniería"}),
+       (marketing:Departamento {nombre: "Marketing"});
+
+
+// Creación de Empleados
+CREATE (jorge:Empleado {nombre: "Jorge", apellido: "Rial"}),
+       (luis:Empleado {nombre: "Luis", apellido: "Miguel"}),
+       (sofia:Empleado {nombre: "Sofía", apellido: "Pérez"});
+
+
+// Relación Empleado y Departamento
+MATCH (jorge:Empleado {nombre: "Jorge"}), (rh:Departamento {nombre: "Recursos Humanos"}),
+      (luis:Empleado {nombre: "Luis"}), (ingenieria:Departamento {nombre: "Ingeniería"}),
+      (sofia:Empleado {nombre: "Sofía"}), (marketing:Departamento {nombre: "Marketing"})
+CREATE (jorge)-[:PERTENECE_A]->(rh),
+       (luis)-[:PERTENECE_A]->(ingenieria),
+       (sofia)-[:PERTENECE_A]->(marketing);
+
+
+// Creacion Proyectos
+CREATE (proy1:Proyecto {nombre: "Intranet Corporativa"}),
+       (proy2:Proyecto {nombre: "Campaña Publicitaria"});
+
+// Asignación Empleados a Proyectos c/Horas semanales
+MATCH (jorge:Empleado {nombre: "Jorge"}), (luis:Empleado {nombre: "Luis"}),
+      (sofia:Empleado {nombre: "Sofía"}),
+      (proy1:Proyecto {nombre: "Intranet Corporativa"}),
+      (proy2:Proyecto {nombre: "Campaña Publicitaria"})
+CREATE (jorge)-[:TRABAJA_EN {horasSemanales: 10}]->(proy1),
+       (luis)-[:TRABAJA_EN {horasSemanales: 20}]->(proy1),
+       (luis)-[:TRABAJA_EN {horasSemanales: 15}]->(proy2),
+       (sofia)-[:TRABAJA_EN {horasSemanales: 25}]->(proy2);
+
+//Asignación de Líderes a Proyectos
+MATCH (jorge:Empleado {nombre: "Jorge"}), (sofia:Empleado {nombre: "Sofía"}),
+      (proy1:Proyecto {nombre: "Intranet Corporativa"}),
+      (proy2:Proyecto {nombre: "Campaña Publicitaria"})
+CREATE (jorge)-[:LIDERA]->(proy1),
+       (sofia)-[:LIDERA]->(proy2);
+
+//Consultas
+//Inciso 1 - Obtener Proyecto, Lider y Empleados Asignados
+
+MATCH (p:Proyecto)<-[:LIDERA]-(lider:Empleado)
+OPTIONAL MATCH (e:Empleado)-[:TRABAJA_EN]->(p)
+RETURN 
+  p.nombre AS Proyecto, 
+  lider.nombre + " " + lider.apellido AS Lider, 
+  COLLECT(e.nombre + " " + e.apellido) AS EmpleadosAsignados;
+
+
+//Inciso 2 - Total de horas por proyecto
+
+MATCH (e:Empleado)-[r:TRABAJA_EN]->(p:Proyecto)
+RETURN 
+  p.nombre AS Proyecto, 
+  SUM(r.horasSemanales) AS TotalHorasSemanales;
+
+
+
+//Inciso 3 - Empleados en más de un proyecto
+
+MATCH (e:Empleado)-[:TRABAJA_EN]->(p:Proyecto)
+WITH e, COUNT(DISTINCT p) AS proyectos
+WHERE proyectos > 1
+RETURN 
+  e.nombre + " " + e.apellido AS Empleado, 
+  proyectos;

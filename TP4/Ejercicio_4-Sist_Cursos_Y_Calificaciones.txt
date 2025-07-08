@@ -1,0 +1,85 @@
+// Crear estudiantes
+CREATE
+  (juan:Estudiante {nombre: "Juan", apellido: "Pérez"}),
+  (maria:Estudiante {nombre: "María", apellido: "Gómez"}),
+  (lucas:Estudiante {nombre: "Lucas", apellido: "Martínez"});
+
+// Crear materias
+CREATE
+  (matematicas:Materia {nombre: "Matemáticas"}),
+  (programacion:Materia {nombre: "Programación"}),
+  (algoritmos:Materia {nombre: "Algoritmos"});
+
+// Crear prerrequisito: Algoritmos requiere Programación
+MATCH (algoritmos:Materia {nombre: "Algoritmos"}), (programacion:Materia {nombre: "Programación"})
+CREATE (algoritmos)-[:TIENE_PRERREQUISITO]->(programacion);
+
+// Crear cursos dictados (cada curso corresponde a una materia)
+CREATE
+  (cursoMath2025:Curso {codigo: "MATH2025", año: 2025}),
+  (cursoProg2025:Curso {codigo: "PROG2025", año: 2025}),
+  (cursoAlg2025:Curso {codigo: "ALG2025", año: 2025}),
+  (cursoMath2024:Curso {codigo: "MATH2024", año: 2024});
+
+// Relacionar cursos con materias
+MATCH (cursoMath2025:Curso {codigo: "MATH2025"}), (matematicas:Materia {nombre: "Matemáticas"}),
+      (cursoProg2025:Curso {codigo: "PROG2025"}), (programacion:Materia {nombre: "Programación"}),
+      (cursoAlg2025:Curso {codigo: "ALG2025"}), (algoritmos:Materia {nombre: "Algoritmos"}),
+      (cursoMath2024:Curso {codigo: "MATH2024"})
+CREATE
+  (cursoMath2025)-[:CORRESPONDE_A]->(matematicas),
+  (cursoProg2025)-[:CORRESPONDE_A]->(programacion),
+  (cursoAlg2025)-[:CORRESPONDE_A]->(algoritmos),
+  (cursoMath2024)-[:CORRESPONDE_A]->(matematicas);
+
+// Inscripciones y calificaciones
+MATCH (juan:Estudiante {nombre: "Juan"}), (maria:Estudiante {nombre: "María"}), (lucas:Estudiante {nombre: "Lucas"}),
+      (cursoMath2025:Curso {codigo: "MATH2025"}), (cursoProg2025:Curso {codigo: "PROG2025"}),
+      (cursoAlg2025:Curso {codigo: "ALG2025"}), (cursoMath2024:Curso {codigo: "MATH2024"})
+CREATE
+  (juan)-[:INSCRIPTO_EN {calificacionFinal: 8}]->(cursoMath2025),
+  (juan)-[:INSCRIPTO_EN {calificacionFinal: 7}]->(cursoProg2025),
+  (maria)-[:INSCRIPTO_EN {calificacionFinal: 6}]->(cursoMath2025),
+  (maria)-[:INSCRIPTO_EN {calificacionFinal: 9}]->(cursoAlg2025),
+  (lucas)-[:INSCRIPTO_EN {calificacionFinal: 10}]->(cursoProg2025),
+  (lucas)-[:INSCRIPTO_EN {calificacionFinal: 5}]->(cursoMath2024);
+
+//Consultas
+// Inciso 1: Listar la transcripción académica de un estudiante (ejemplo: Juan)
+MATCH (e:Estudiante {nombre: "Juan"})-[r:INSCRIPTO_EN]->(c:Curso)-[:CORRESPONDE_A]->(m:Materia)
+RETURN 
+  m.nombre AS Materia,
+  c.codigo AS CodigoCurso,
+  r.calificacionFinal AS Calificacion
+ORDER BY m.nombre;
+
+// Inciso 2: Verificar si un estudiante puede inscribirse en una materia (Prerrequisito obligatorio)
+WITH "Juan" AS estudianteNombre, "Algoritmos" AS materiaDeseada
+MATCH (e:Estudiante {nombre: estudianteNombre}), (materia:Materia {nombre: materiaDeseada})
+OPTIONAL MATCH (materia)-[:TIENE_PRERREQUISITO]->(prerreq:Materia)
+WITH e, materia, collect(prerreq) AS prerrequisitos, estudianteNombre, materiaDeseada
+// Verifico si aprobó los prerrequisitos
+UNWIND prerrequisitos AS p
+MATCH (e)-[ins:INSCRIPTO_EN]->(c:Curso)-[:CORRESPONDE_A]->(p)
+WHERE ins.calificacionFinal >= 6
+WITH e, materia, count(p) AS aprobados, size(prerrequisitos) AS total, estudianteNombre, materiaDeseada
+RETURN 
+  CASE 
+    WHEN aprobados = total THEN estudianteNombre + " puede inscribirse en " + materiaDeseada
+    ELSE estudianteNombre + " NO puede inscribirse en " + materiaDeseada
+  END AS Resultado;
+
+
+// Inciso 3: Calcular el promedio de calificaciones por estudiante
+MATCH (e:Estudiante)-[r:INSCRIPTO_EN]->(:Curso)
+RETURN 
+  e.nombre + " " + e.apellido AS Estudiante,
+  avg(r.calificacionFinal) AS PromedioCalificaciones
+ORDER BY PromedioCalificaciones DESC;
+
+// Inciso 4: Detectar materias con promedio inferior a 7
+MATCH (:Curso)-[:CORRESPONDE_A]->(m:Materia)<-[r:INSCRIPTO_EN]-(:Estudiante)
+WITH m.nombre AS Materia, avg(r.calificacionFinal) AS Promedio
+WHERE Promedio < 7
+RETURN Materia, Promedio
+ORDER BY Promedio ASC;

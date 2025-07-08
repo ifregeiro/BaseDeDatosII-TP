@@ -1,0 +1,101 @@
+//Ejercicio 3 - Crear Modelo ----------------------------------------------------------
+// Crear usuarios
+CREATE
+  (ana:Usuario {nombre: "Ana", apellido: "González"}),
+  (bruno:Usuario {nombre: "Bruno", apellido: "Martínez"}),
+  (carla:Usuario {nombre: "Carla", apellido: "López"}),
+  (daniel:Usuario {nombre: "Daniel", apellido: "Pérez"});
+
+
+// Crear conexiones
+MATCH (ana:Usuario {nombre: "Ana"}), (bruno:Usuario {nombre: "Bruno"}),
+      (carla:Usuario {nombre: "Carla"}), (daniel:Usuario {nombre: "Daniel"})
+CREATE
+  (ana)-[:CONOCE]->(bruno),
+  (bruno)-[:CONOCE]->(carla),
+  (carla)-[:CONOCE]->(daniel),
+  (daniel)-[:CONOCE]->(ana),
+  (ana)-[:CONOCE]->(carla);
+
+
+// Crear posts
+CREATE
+  (post1:Post {contenido: "Primer post de Ana", fecha: date("2025-07-01")}),
+  (post2:Post {contenido: "Post de Bruno sobre Neo4j", fecha: date("2025-07-03")}),
+  (post3:Post {contenido: "Carla comparte su experiencia", fecha: date("2025-07-05")});
+
+// Relacionar Posts c/Users
+MATCH (ana:Usuario {nombre: "Ana"}), (bruno:Usuario {nombre: "Bruno"}), (carla:Usuario {nombre: "Carla"}),
+      (post1:Post {contenido: "Primer post de Ana"}),
+      (post2:Post {contenido: "Post de Bruno sobre Neo4j"}),
+      (post3:Post {contenido: "Carla comparte su experiencia"})
+CREATE
+  (ana)-[:PUBLICA]->(post1),
+  (bruno)-[:PUBLICA]->(post2),
+  (carla)-[:PUBLICA]->(post3);
+
+
+// Crear habilidades
+CREATE
+  (neo4j:Habilidad {nombre: "Neo4j"}),
+  (java:Habilidad {nombre: "Java"}),
+  (cypher:Habilidad {nombre: "Cypher"}),
+  (comunicacion:Habilidad {nombre: "Comunicación"}),
+  (marketing:Habilidad {nombre: "Marketing"}),
+  (gestion:Habilidad {nombre: "Gestión de proyectos"});
+
+
+// Asignar habilidades a usuarios
+MATCH (ana:Usuario {nombre: "Ana"}), (bruno:Usuario {nombre: "Bruno"}), (carla:Usuario {nombre: "Carla"}), (daniel:Usuario {nombre: "Daniel"}),
+      (neo4j:Habilidad {nombre: "Neo4j"}), (java:Habilidad {nombre: "Java"}), (cypher:Habilidad {nombre: "Cypher"}),
+      (comunicacion:Habilidad {nombre: "Comunicación"}), (marketing:Habilidad {nombre: "Marketing"}), (gestion:Habilidad {nombre: "Gestión de proyectos"})
+CREATE
+  (ana)-[:TIENE]->(neo4j),
+  (ana)-[:TIENE]->(java),
+  (bruno)-[:TIENE]->(java),
+  (bruno)-[:TIENE]->(cypher),
+  (carla)-[:TIENE]->(comunicacion),
+  (carla)-[:TIENE]->(marketing),
+  (daniel)-[:TIENE]->(gestion),
+  (daniel)-[:TIENE]->(neo4j);
+
+
+// Endosos (otros usuarios reconocen habilidades)
+MATCH (ana:Usuario {nombre: "Ana"}), (bruno:Usuario {nombre: "Bruno"}), (carla:Usuario {nombre: "Carla"}), (daniel:Usuario {nombre: "Daniel"}),
+      (neo4j:Habilidad {nombre: "Neo4j"}), (java:Habilidad {nombre: "Java"}), (cypher:Habilidad {nombre: "Cypher"}),
+      (comunicacion:Habilidad {nombre: "Comunicación"}), (marketing:Habilidad {nombre: "Marketing"}), (gestion:Habilidad {nombre: "Gestión de proyectos"})
+CREATE
+  (bruno)-[:ENDOSA]->(neo4j),
+  (carla)-[:ENDOSA]->(java),
+  (ana)-[:ENDOSA]->(comunicacion),
+  (daniel)-[:ENDOSA]->(marketing),
+  (ana)-[:ENDOSA]->(gestion);
+
+
+//Inciso 1 - Listar los usuarios con más conexiones (COUNT)
+MATCH (u:Usuario)-[:CONOCE]->(otros)
+RETURN u.nombre + " " + u.apellido AS Usuario, COUNT(otros) AS CantidadConexiones
+ORDER BY CantidadConexiones DESC;
+
+
+//Inciso 2 - Obtener los 2 usuarios con más publicaciones
+MATCH (u:Usuario)-[:PUBLICA]->(p:Post)
+RETURN u.nombre + " " + u.apellido AS Usuario, COUNT(p) AS CantidadPosts
+ORDER BY CantidadPosts DESC
+LIMIT 2;
+
+
+//Inciso 3 - Mostrar las habilidades más endosadas en total
+MATCH (u:Usuario)-[:ENDOSA]->(h:Habilidad)
+RETURN h.nombre AS Habilidad, COUNT(u) AS TotalEndosos
+ORDER BY TotalEndosos DESC;
+
+
+//Inciso 4 - Para un usuario específico, listar las habilidades que aún no ha endosado a otros
+MATCH (ana:Usuario {nombre: "Ana"})-[:TIENE]->(h:Habilidad)
+WHERE NOT EXISTS {
+  MATCH (ana)-[:ENDOSA]->(h)
+}
+RETURN h.nombre AS HabilidadesNoEndosadas;
+
+
