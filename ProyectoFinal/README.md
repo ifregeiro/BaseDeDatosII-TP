@@ -19,8 +19,6 @@
 * Se trata de un proyecto enfocado en el diseño de una base de datos en MongoDB y en la construcción de una API RESTful para su uso.
 * El backend ofrece servicios de alta, consulta y modificación de libros y préstamos, junto a un reporte estadístico.
 * Se proporciona una app web realizada en React.js para facilitar el acceso visual y rápido al sistema.
-* La base de datos empleada se llama:
-  `mongodb://localhost:27017/BibliotecaGrupo19`
 
 ---
 
